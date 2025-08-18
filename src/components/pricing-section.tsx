@@ -34,7 +34,7 @@ const plans = [
       "Fraud protection included",
       "Automated winner selection"
     ],
-    cta: "Start Premium Trial",
+    cta: "Join Premium Now",
     popular: true,
     prizeAmount: 8500
   }
@@ -127,7 +127,7 @@ export function PricingSection() {
 
         <div className="text-center mt-12 pt-8 border-t border-border">
           <p className="text-sm text-muted-foreground mb-4">
-            All plans include 14-day free trial • No setup fees • Cancel anytime
+            No setup fees • Cancel anytime • Premium plans bill immediately
           </p>
           <p className="text-xs text-muted-foreground">
             Premium tier pricing scales with network size. Current rate: $149/month for stores earning $10K+/month
