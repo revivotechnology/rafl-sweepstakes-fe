@@ -96,7 +96,7 @@ export default function Dashboard() {
       const { data: storeData, error: storeError } = await supabase
         .from('stores')
         .select('*')
-        .single();
+        .maybeSingle();
 
       if (storeError && storeError.code !== 'PGRST116') {
         console.error('Store error:', storeError);
