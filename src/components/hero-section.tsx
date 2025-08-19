@@ -1,9 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PrizeCounter } from "@/components/ui/prize-counter";
+
 import { ArrowRight, Zap, Store, Users, DollarSign } from "lucide-react";
 
 export function HeroSection() {
+  const navigate = useNavigate();
   return (
     <section className="relative overflow-hidden py-20 lg:py-32">
       {/* Background gradient */}
@@ -67,7 +70,12 @@ export function HeroSection() {
 
           {/* CTA buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button variant="primary" size="lg" className="shadow-primary">
+            <Button 
+              variant="primary" 
+              size="lg" 
+              className="shadow-primary"
+              onClick={() => navigate('/auth')}
+            >
               Start Your Free Trial
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>

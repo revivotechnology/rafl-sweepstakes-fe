@@ -1,7 +1,10 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+
 import { Badge } from "@/components/ui/badge";
 
 export function Navigation() {
+  const navigate = useNavigate();
   return (
     <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -26,9 +29,9 @@ export function Navigation() {
         </div>
 
         <div className="flex items-center space-x-3">
-          <Button variant="ghost">Sign In</Button>
-          <Button variant="primary" size="sm">
-            Start Free Trial
+          <Button variant="ghost" onClick={() => navigate('/auth')}>Sign In</Button>
+          <Button variant="primary" size="sm" onClick={() => navigate('/auth')}>
+            Start Free
           </Button>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,7 @@ const plans = [
 ];
 
 export function PricingSection() {
+  const navigate = useNavigate();
   return (
     <section id="pricing" className="py-20 lg:py-32 bg-muted/30">
       <div className="container mx-auto px-4">
@@ -117,6 +119,7 @@ export function PricingSection() {
                 variant={plan.popular ? "primary" : "outline"} 
                 className="w-full"
                 size="lg"
+                onClick={() => navigate('/auth')}
               >
                 {plan.popular && <Zap className="w-4 h-4 mr-2" />}
                 {plan.cta}

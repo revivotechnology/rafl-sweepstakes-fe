@@ -122,6 +122,56 @@ export type Database = {
         }
         Relationships: []
       }
+      giveaways: {
+        Row: {
+          created_at: string
+          end_date: string
+          entry_requirements: Json | null
+          id: string
+          prize_amount: number
+          start_date: string
+          status: string
+          store_id: string
+          title: string
+          total_entries: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          entry_requirements?: Json | null
+          id?: string
+          prize_amount: number
+          start_date: string
+          status?: string
+          store_id: string
+          title: string
+          total_entries?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          entry_requirements?: Json | null
+          id?: string
+          prize_amount?: number
+          start_date?: string
+          status?: string
+          store_id?: string
+          title?: string
+          total_entries?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giveaways_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       matches: {
         Row: {
           created_at: string
@@ -261,6 +311,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      participants: {
+        Row: {
+          created_at: string
+          email: string
+          entry_count: number | null
+          giveaway_id: string
+          id: string
+          metadata: Json | null
+          source: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          entry_count?: number | null
+          giveaway_id: string
+          id?: string
+          metadata?: Json | null
+          source?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          entry_count?: number | null
+          giveaway_id?: string
+          id?: string
+          metadata?: Json | null
+          source?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_giveaway_id_fkey"
+            columns: ["giveaway_id"]
+            isOneToOne: false
+            referencedRelation: "giveaways"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_verifications: {
         Row: {
@@ -532,6 +620,45 @@ export type Database = {
           reporter_id?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      stores: {
+        Row: {
+          created_at: string
+          id: string
+          monthly_revenue: number | null
+          shopify_domain: string | null
+          status: string
+          store_name: string
+          store_url: string | null
+          subscription_tier: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          monthly_revenue?: number | null
+          shopify_domain?: string | null
+          status?: string
+          store_name: string
+          store_url?: string | null
+          subscription_tier?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          monthly_revenue?: number | null
+          shopify_domain?: string | null
+          status?: string
+          store_name?: string
+          store_url?: string | null
+          subscription_tier?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
