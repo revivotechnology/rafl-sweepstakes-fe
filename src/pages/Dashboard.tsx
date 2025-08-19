@@ -51,8 +51,10 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [store, setStore] = useState<Store | null>(null);
+  const [stores, setStores] = useState<Store[]>([]);
   const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
   const [participants, setParticipants] = useState<Participant[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -92,47 +94,110 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      // Load store data
-      const { data: storeData, error: storeError } = await supabase
-        .from('stores')
-        .select('*')
-        .maybeSingle();
+      // Determine if user is admin
+      const { data: adminRole, error: adminRoleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .eq('role', 'admin');
 
-      if (storeError && storeError.code !== 'PGRST116') {
-        console.error('Store error:', storeError);
-        toast({
-          title: "Error loading store data",
-          description: storeError.message,
-          variant: "destructive",
-        });
-      } else if (storeData) {
-        setStore(storeData);
-        
-        // Load giveaways for this store
-        const { data: giveawaysData, error: giveawaysError } = await supabase
-          .from('giveaways')
+      if (adminRoleError) {
+        console.error('Role check error:', adminRoleError);
+      }
+
+      const isAdminUser = Array.isArray(adminRole) && adminRole.length > 0;
+      setIsAdmin(isAdminUser);
+
+      if (isAdminUser) {
+        // Admin: load all stores
+        const { data: storesData, error: storesError } = await supabase
+          .from('stores')
           .select('*')
-          .eq('store_id', storeData.id)
           .order('created_at', { ascending: false });
 
-        if (giveawaysError) {
-          console.error('Giveaways error:', giveawaysError);
+        if (storesError) {
+          console.error('Stores error:', storesError);
+          toast({
+            title: 'Error loading stores',
+            description: storesError.message,
+            variant: 'destructive',
+          });
         } else {
-          setGiveaways(giveawaysData || []);
-          
-          // Load participants for all giveaways
-          if (giveawaysData && giveawaysData.length > 0) {
-            const giveawayIds = giveawaysData.map(g => g.id);
-            const { data: participantsData, error: participantsError } = await supabase
-              .from('participants')
+          setStores(storesData || []);
+
+          if (storesData && storesData.length > 0) {
+            const storeIds = storesData.map(s => s.id);
+            const { data: giveawaysData, error: giveawaysError } = await supabase
+              .from('giveaways')
               .select('*')
-              .in('giveaway_id', giveawayIds)
+              .in('store_id', storeIds)
               .order('created_at', { ascending: false });
 
-            if (participantsError) {
-              console.error('Participants error:', participantsError);
+            if (giveawaysError) {
+              console.error('Giveaways error:', giveawaysError);
             } else {
-              setParticipants(participantsData || []);
+              setGiveaways(giveawaysData || []);
+
+              if (giveawaysData && giveawaysData.length > 0) {
+                const giveawayIds = giveawaysData.map(g => g.id);
+                const { data: participantsData, error: participantsError } = await supabase
+                  .from('participants')
+                  .select('*')
+                  .in('giveaway_id', giveawayIds)
+                  .order('created_at', { ascending: false });
+
+                if (participantsError) {
+                  console.error('Participants error:', participantsError);
+                } else {
+                  setParticipants(participantsData || []);
+                }
+              }
+            }
+          }
+        }
+      } else {
+        // Non-admin: load single store and related data
+        const { data: storeData, error: storeError } = await supabase
+          .from('stores')
+          .select('*')
+          .maybeSingle();
+
+        if (storeError && storeError.code !== 'PGRST116') {
+          console.error('Store error:', storeError);
+          toast({
+            title: 'Error loading store data',
+            description: storeError.message,
+            variant: 'destructive',
+          });
+        } else if (storeData) {
+          setStore(storeData);
+          
+          // Load giveaways for this store
+          const { data: giveawaysData, error: giveawaysError } = await supabase
+            .from('giveaways')
+            .select('*')
+            .eq('store_id', storeData.id)
+            .order('created_at', { ascending: false });
+
+          if (giveawaysError) {
+            console.error('Giveaways error:', giveawaysError);
+          } else {
+            setGiveaways(giveawaysData || []);
+            
+            // Load participants for all giveaways
+            if (giveawaysData && giveawaysData.length > 0) {
+              const giveawayIds = giveawaysData.map(g => g.id);
+              const { data: participantsData, error: participantsError } = await supabase
+                .from('participants')
+                .select('*')
+                .in('giveaway_id', giveawayIds)
+                .order('created_at', { ascending: false });
+
+              if (participantsError) {
+                console.error('Participants error:', participantsError);
+              } else {
+                setParticipants(participantsData || []);
+              }
             }
           }
         }
@@ -215,14 +280,19 @@ Enter now at ${store?.store_url || 'your-store.com'}
               <div>
                 <h1 className="text-xl font-bold">RafflePool Dashboard</h1>
                 <p className="text-sm text-muted-foreground">
-                  {store?.store_name || 'Your Store'}
+                  {isAdmin ? 'Global Admin View' : (store?.store_name || 'Your Store')}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <Badge variant={store?.subscription_tier === 'premium' ? 'default' : 'outline'}>
-                {store?.subscription_tier === 'premium' ? 'Premium' : 'Free Tier'}
-              </Badge>
+              {isAdmin && (
+                <Badge variant="default">Admin</Badge>
+              )}
+              {store && (
+                <Badge variant={store.subscription_tier === 'premium' ? 'default' : 'outline'}>
+                  {store.subscription_tier === 'premium' ? 'Premium' : 'Free Tier'}
+                </Badge>
+              )}
               <Button variant="ghost" size="sm">
                 <Settings className="w-4 h-4" />
               </Button>
