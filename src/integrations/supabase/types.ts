@@ -14,7 +14,118 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      giveaways: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          prize_amount: number
+          start_date: string | null
+          status: Database["public"]["Enums"]["giveaway_status"]
+          store_id: string
+          title: string
+          total_entries: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          prize_amount?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["giveaway_status"]
+          store_id: string
+          title: string
+          total_entries?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          prize_amount?: number
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["giveaway_status"]
+          store_id?: string
+          title?: string
+          total_entries?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "giveaways_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          created_at: string
+          email: string
+          entry_count: number
+          giveaway_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          entry_count?: number
+          giveaway_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          entry_count?: number
+          giveaway_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_giveaway_id_fkey"
+            columns: ["giveaway_id"]
+            isOneToOne: false
+            referencedRelation: "giveaways"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stores: {
+        Row: {
+          created_at: string
+          id: string
+          status: Database["public"]["Enums"]["store_status"]
+          store_name: string
+          store_url: string
+          subscription_tier: Database["public"]["Enums"]["subscription_tier"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["store_status"]
+          store_name: string
+          store_url: string
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          status?: Database["public"]["Enums"]["store_status"]
+          store_name?: string
+          store_url?: string
+          subscription_tier?: Database["public"]["Enums"]["subscription_tier"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +134,9 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      giveaway_status: "draft" | "active" | "completed"
+      store_status: "active" | "suspended"
+      subscription_tier: "free" | "premium"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +263,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      giveaway_status: ["draft", "active", "completed"],
+      store_status: ["active", "suspended"],
+      subscription_tier: ["free", "premium"],
+    },
   },
 } as const
