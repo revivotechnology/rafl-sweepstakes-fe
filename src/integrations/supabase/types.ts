@@ -66,22 +66,28 @@ export type Database = {
           created_at: string
           email: string
           entry_count: number
+          entry_type: string
           giveaway_id: string
           id: string
+          purchase_id: string | null
         }
         Insert: {
           created_at?: string
           email: string
           entry_count?: number
+          entry_type?: string
           giveaway_id: string
           id?: string
+          purchase_id?: string | null
         }
         Update: {
           created_at?: string
           email?: string
           entry_count?: number
+          entry_type?: string
           giveaway_id?: string
           id?: string
+          purchase_id?: string | null
         }
         Relationships: [
           {
@@ -89,6 +95,124 @@ export type Database = {
             columns: ["giveaway_id"]
             isOneToOne: false
             referencedRelation: "giveaways"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "participants_purchase_id_fkey"
+            columns: ["purchase_id"]
+            isOneToOne: false
+            referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchases: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_email: string
+          id: string
+          order_date: string
+          shopify_order_id: string
+          shopify_shop_id: string
+          total_amount_usd: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          customer_email: string
+          id?: string
+          order_date: string
+          shopify_order_id: string
+          shopify_shop_id: string
+          total_amount_usd?: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_email?: string
+          id?: string
+          order_date?: string
+          shopify_order_id?: string
+          shopify_shop_id?: string
+          total_amount_usd?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchases_shopify_shop_id_fkey"
+            columns: ["shopify_shop_id"]
+            isOneToOne: false
+            referencedRelation: "shopify_shops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shopify_shops: {
+        Row: {
+          access_token: string | null
+          created_at: string
+          id: string
+          shop_domain: string
+          store_id: string
+          updated_at: string
+          webhook_verified: boolean | null
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          shop_domain: string
+          store_id: string
+          updated_at?: string
+          webhook_verified?: boolean | null
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string
+          id?: string
+          shop_domain?: string
+          store_id?: string
+          updated_at?: string
+          webhook_verified?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shopify_shops_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          store_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          store_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          store_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_members_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -126,14 +250,46 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_purchase_entries: {
+        Args: { amount_usd: number }
+        Returns: number
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "admin" | "store_manager" | "store_owner"
       giveaway_status: "draft" | "active" | "completed"
       store_status: "active" | "suspended"
       subscription_tier: "free" | "premium"
@@ -264,6 +420,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "store_manager", "store_owner"],
       giveaway_status: ["draft", "active", "completed"],
       store_status: ["active", "suspended"],
       subscription_tier: ["free", "premium"],
