@@ -12,7 +12,7 @@ export function Navigation() {
           <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">R</span>
           </div>
-          <span className="text-xl font-bold">RafflePool</span>
+          <span className="text-xl font-bold">Rafl</span>
           <Badge variant="secondary" className="ml-2">Beta</Badge>
         </div>
         

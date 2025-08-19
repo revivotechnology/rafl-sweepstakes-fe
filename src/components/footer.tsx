@@ -10,7 +10,7 @@ export function Footer() {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">R</span>
               </div>
-              <span className="text-lg font-bold">RafflePool</span>
+              <span className="text-lg font-bold">Rafl</span>
             </div>
             <p className="text-sm text-muted-foreground">
               The network effect platform for Shopify stores to offer life-changing prizes
@@ -54,7 +54,7 @@ export function Footer() {
 
         <div className="border-t border-border mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            © 2024 RafflePool. All rights reserved.
+            © 2024 Rafl. All rights reserved.
           </p>
           <div className="flex items-center space-x-4 mt-4 md:mt-0">
             <span className="text-xs text-muted-foreground">Made with ❤️ for Shopify stores</span>

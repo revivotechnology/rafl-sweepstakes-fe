@@ -234,7 +234,7 @@ export default function Dashboard() {
   const widgetCode = `<script>
   (function() {
     var raffleScript = document.createElement('script');
-    raffleScript.src = 'https://cdn.rafflepool.com/widget.js';
+    raffleScript.src = 'https://cdn.rafl.com/widget.js';
     raffleScript.setAttribute('data-store-id', '${store?.id || 'YOUR_STORE_ID'}');
     document.head.appendChild(raffleScript);
   })();
@@ -250,7 +250,7 @@ Enter our exclusive giveaway for a chance to win life-changing money!
 
 Enter now at ${store?.store_url || 'your-store.com'}
 
-#Giveaway #CashPrize #RafflePool`;
+#Giveaway #CashPrize #Rafl`;
 
   if (loading) {
     return (
@@ -278,7 +278,7 @@ Enter now at ${store?.store_url || 'your-store.com'}
                 <Zap className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold">RafflePool Dashboard</h1>
+                <h1 className="text-xl font-bold">Rafl Dashboard</h1>
                 <p className="text-sm text-muted-foreground">
                   {isAdmin ? 'Global Admin View' : (store?.store_name || 'Your Store')}
                 </p>

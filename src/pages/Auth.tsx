@@ -82,7 +82,7 @@ export default function Auth() {
         });
       } else if (data.user) {
         toast({
-          title: "Welcome to RafflePool!",
+          title: "Welcome to Rafl!",
           description: "Your account has been created successfully.",
         });
       }
@@ -159,7 +159,7 @@ export default function Auth() {
               <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
                 <Zap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold">RafflePool</span>
+              <span className="text-xl font-bold">Rafl</span>
             </div>
           </div>
         </div>
@@ -173,7 +173,7 @@ export default function Auth() {
               <Store className="w-3 h-3 mr-1" />
               Store Owner Portal
             </Badge>
-            <h1 className="text-3xl font-bold mb-2">Join RafflePool</h1>
+            <h1 className="text-3xl font-bold mb-2">Join Rafl</h1>
             <p className="text-muted-foreground">
               Create an account to start offering life-changing prizes to your customers
             </p>
