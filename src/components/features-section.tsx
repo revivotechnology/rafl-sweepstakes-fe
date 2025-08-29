@@ -38,12 +38,6 @@ const features = [
     badge: "Security"
   },
   {
-    icon: Mail,
-    title: "Email Marketing Engine",
-    description: "Automated cross-promotion campaigns that drive traffic between network stores.",
-    badge: "Marketing"
-  },
-  {
     icon: BarChart3,
     title: "Real-Time Analytics",
     description: "Track performance, ROI, and customer acquisition with detailed dashboards.",
