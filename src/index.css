@@ -2,11 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Rafl Design System - Modern SaaS aesthetic with purple/blue gradients */
+/* Rafl Design System - Modern SaaS aesthetic with orange/red gradients inspired by the logo */
 
 @layer base {
   :root {
-    /* Core brand colors - Purple/Blue palette */
+    /* Core brand colors - Orange/Red palette matching the logo */
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
 
@@ -16,21 +16,21 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    /* Primary - Rich purple for CTAs and highlights */
-    --primary: 263 70% 50%;
+    /* Primary - Vibrant orange matching the logo */
+    --primary: 24 100% 50%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 263 70% 60%;
+    --primary-glow: 16 100% 60%;
 
-    /* Secondary - Elegant blue-gray */
-    --secondary: 240 4% 96%;
-    --secondary-foreground: 240 10% 3.9%;
+    /* Secondary - Warm neutral backgrounds */
+    --secondary: 20 14% 96%;
+    --secondary-foreground: 20 14% 11%;
 
     /* Muted backgrounds */
-    --muted: 240 4% 96%;
-    --muted-foreground: 240 3% 40%;
+    --muted: 20 14% 96%;
+    --muted-foreground: 20 5% 40%;
 
-    /* Accent - Bright blue for interactions */
-    --accent: 217 91% 60%;
+    /* Accent - Deep red for interactions */
+    --accent: 0 84% 55%;
     --accent-foreground: 0 0% 100%;
 
     /* Success - Vibrant green for winning/success states */
@@ -44,22 +44,22 @@
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 240 5% 90%;
-    --input: 240 5% 90%;
-    --ring: 263 70% 50%;
+    --border: 20 14% 90%;
+    --input: 20 14% 90%;
+    --ring: 24 100% 50%;
 
     --radius: 0.75rem;
 
-    /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(217 91% 60%));
-    --gradient-secondary: linear-gradient(135deg, hsl(240 4% 96%), hsl(240 5% 90%));
+    /* Gradients - Orange to red matching the logo */
+    --gradient-primary: linear-gradient(135deg, hsl(24 100% 50%), hsl(0 84% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(20 14% 96%), hsl(20 14% 90%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
-    --gradient-prize: linear-gradient(135deg, hsl(38 92% 50%), hsl(263 70% 50%));
+    --gradient-prize: linear-gradient(135deg, hsl(24 100% 50%), hsl(0 84% 55%));
 
     /* Shadows with brand colors */
-    --shadow-primary: 0 10px 40px -10px hsl(263 70% 50% / 0.3);
-    --shadow-accent: 0 10px 40px -10px hsl(217 91% 60% / 0.2);
-    --shadow-card: 0 4px 20px -2px hsl(240 5% 90% / 0.2);
+    --shadow-primary: 0 10px 40px -10px hsl(24 100% 50% / 0.3);
+    --shadow-accent: 0 10px 40px -10px hsl(0 84% 55% / 0.2);
+    --shadow-card: 0 4px 20px -2px hsl(20 14% 90% / 0.2);
 
     /* Animations */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
