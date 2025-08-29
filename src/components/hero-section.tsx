@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { PrizeCounter } from "@/components/ui/prize-counter";
+import { WaitlistForm } from "./waitlist-form";
 
 import { ArrowRight, Zap, Store, Users, DollarSign } from "lucide-react";
 
@@ -29,8 +30,8 @@ export function HeroSection() {
           </h1>
 
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join the network effect. Pool together with other Shopify stores to offer 
-            life-changing cash prizes that drive massive customer engagement and sales.
+            Be among the first to experience the network effect. Our October 2025 beta will feature 
+            life-changing cash prizes and revolutionary cross-store promotion technology.
           </p>
 
           {/* Prize showcase */}
@@ -68,18 +69,21 @@ export function HeroSection() {
             </div>
           </div>
 
-          {/* CTA buttons */}
+          {/* Waitlist CTA */}
+          <div className="bg-card/50 backdrop-blur-sm border border-primary/20 rounded-2xl p-8 mb-8 shadow-card">
+            <WaitlistForm variant="hero" />
+          </div>
+
+          {/* Secondary CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
-              variant="primary" 
-              size="lg" 
-              className="shadow-primary"
+              variant="outline" 
+              size="lg"
               onClick={() => navigate('/auth')}
             >
-              Start Your Free Trial
-              <ArrowRight className="ml-2 h-4 w-4" />
+              Store Owner? Sign Up
             </Button>
-            <Button variant="outline" size="lg">
+            <Button variant="ghost" size="lg">
               Watch Demo
             </Button>
           </div>
