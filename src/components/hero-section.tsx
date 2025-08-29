@@ -24,7 +24,7 @@ export function HeroSection() {
             Turn Your Store Into a
             <br />
             <span className="text-transparent bg-gradient-prize bg-clip-text">
-              Lottery Winner Factory
+              Conversion Machine with Giveaways
             </span>
           </h1>
 
