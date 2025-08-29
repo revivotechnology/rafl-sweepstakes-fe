@@ -138,20 +138,8 @@ export default function Dashboard() {
             } else {
               setGiveaways(giveawaysData || []);
 
-              if (giveawaysData && giveawaysData.length > 0) {
-                const giveawayIds = giveawaysData.map(g => g.id);
-                const { data: participantsData, error: participantsError } = await supabase
-                  .from('participants')
-                  .select('*')
-                  .in('giveaway_id', giveawayIds)
-                  .order('created_at', { ascending: false });
-
-                if (participantsError) {
-                  console.error('Participants error:', participantsError);
-                } else {
-                  setParticipants(participantsData || []);
-                }
-              }
+                // For admins, do not fetch participants to protect customer emails
+                setParticipants([]);
             }
           }
         }
