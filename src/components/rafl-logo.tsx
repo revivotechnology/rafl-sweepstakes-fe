@@ -3,6 +3,7 @@ interface RaflLogoProps {
 }
 
 export function RaflLogo({ className = "w-8 h-8" }: RaflLogoProps) {
+  console.log("RaflLogo component rendering...");
   return (
     <div className={`${className} relative`}>
       <svg viewBox="0 0 100 100" className="w-full h-full">

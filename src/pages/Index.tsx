@@ -6,6 +6,7 @@ import { DashboardPreview } from "@/components/dashboard-preview";
 import { Footer } from "@/components/footer";
 
 const Index = () => {
+  console.log("Index component rendering...");
   return (
     <div className="min-h-screen bg-background">
       <Navigation />

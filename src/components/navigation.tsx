@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { RaflLogo } from "./rafl-logo";
 
 export function Navigation() {
+  console.log("Navigation component rendering...");
   const navigate = useNavigate();
   return (
     <nav className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
