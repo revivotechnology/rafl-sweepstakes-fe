@@ -475,49 +475,51 @@ Enter now at ${store?.store_url || 'your-store.com'}
               </div>
             </Card>
           </div>
-
-          {isAdmin && (
-            <div className="mt-8">
-              <Card className="p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold">Waitlist Signups</h2>
-                </div>
-                {waitlist.length > 0 ? (
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Source</TableHead>
-                        <TableHead>UTM Campaign</TableHead>
-                        <TableHead>UTM Source</TableHead>
-                        <TableHead>UTM Medium</TableHead>
-                        <TableHead>Joined</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {waitlist.map((w) => (
-                        <TableRow key={w.id}>
-                          <TableCell className="font-medium">{w.email}</TableCell>
-                          <TableCell>{w.source || '-'}</TableCell>
-                          <TableCell>{w.utm_campaign || '-'}</TableCell>
-                          <TableCell>{w.utm_source || '-'}</TableCell>
-                          <TableCell>{w.utm_medium || '-'}</TableCell>
-                          <TableCell>{new Date(w.created_at).toLocaleString()}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>No waitlist signups yet</p>
-                  </div>
-                )}
-              </Card>
-            </div>
-          )}
-
+          </div>
         </div>
+
+        {/* Admin Waitlist Section */}
+        {isAdmin && (
+          <div className="mt-8">
+            <Card className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold">Waitlist Signups</h2>
+              </div>
+              {waitlist.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Source</TableHead>
+                      <TableHead>UTM Campaign</TableHead>
+                      <TableHead>UTM Source</TableHead>
+                      <TableHead>UTM Medium</TableHead>
+                      <TableHead>Joined</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {waitlist.map((w) => (
+                      <TableRow key={w.id}>
+                        <TableCell className="font-medium">{w.email}</TableCell>
+                        <TableCell>{w.source || '-'}</TableCell>
+                        <TableCell>{w.utm_campaign || '-'}</TableCell>
+                        <TableCell>{w.utm_source || '-'}</TableCell>
+                        <TableCell>{w.utm_medium || '-'}</TableCell>
+                        <TableCell>{new Date(w.created_at).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>No waitlist signups yet</p>
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
+
       </div>
     </div>
   );
