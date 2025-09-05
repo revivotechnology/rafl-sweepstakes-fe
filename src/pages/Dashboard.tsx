@@ -96,11 +96,17 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
+      // Check if user exists before making queries
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
+      
       // Determine if user is admin
       const { data: adminRole, error: adminRoleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .eq('role', 'admin');
 
       if (adminRoleError) {
