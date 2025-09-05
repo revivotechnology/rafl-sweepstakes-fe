@@ -66,12 +66,15 @@ export default function Dashboard() {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('Auth state change:', event, 'Session:', !!session, 'User:', session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
         
         if (!session?.user) {
+          console.log('No session, redirecting to auth');
           navigate('/auth');
         } else {
+          console.log('Session found, loading dashboard data for:', session.user.email);
           // Defer data fetching to prevent deadlocks
           setTimeout(() => {
             loadDashboardData();
@@ -82,12 +85,15 @@ export default function Dashboard() {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', !!session, 'User:', session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
       if (!session?.user) {
+        console.log('No initial session, redirecting to auth');
         navigate('/auth');
       } else {
+        console.log('Initial session found, loading dashboard data');
         loadDashboardData();
       }
     });
