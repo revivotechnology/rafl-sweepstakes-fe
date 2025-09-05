@@ -107,13 +107,14 @@ export default function Dashboard() {
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .eq('role', 'admin');
+        .eq('role', 'admin')
+        .maybeSingle();
 
       if (adminRoleError) {
         console.error('Role check error:', adminRoleError);
       }
 
-      const isAdminUser = Array.isArray(adminRole) && adminRole.length > 0;
+      const isAdminUser = adminRole !== null;
       setIsAdmin(isAdminUser);
 
       if (isAdminUser) {
