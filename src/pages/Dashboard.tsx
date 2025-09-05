@@ -519,8 +519,6 @@ Enter now at ${store?.store_url || 'your-store.com'}
             </Card>
           </div>
         )}
-
-        </div>
       </div>
     </div>
   );
