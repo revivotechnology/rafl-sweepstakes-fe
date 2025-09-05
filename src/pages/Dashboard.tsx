@@ -48,6 +48,7 @@ interface Participant {
 }
 
 export default function Dashboard() {
+  console.log('Dashboard component rendering');
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -58,6 +59,8 @@ export default function Dashboard() {
   const [waitlist, setWaitlist] = useState<Array<{ id: string; email: string; source: string | null; utm_source: string | null; utm_campaign: string | null; utm_medium: string | null; created_at: string; }>>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  console.log('Dashboard state - isAdmin:', isAdmin, 'waitlist length:', waitlist.length);
 
   useEffect(() => {
     // Set up auth state listener
@@ -486,8 +489,15 @@ Enter now at ${store?.store_url || 'your-store.com'}
         </div>
 
         {/* Admin Waitlist Section */}
-        {isAdmin && (
+        {(() => {
+          console.log('Checking waitlist render condition - isAdmin:', isAdmin, 'waitlist:', waitlist);
+          return isAdmin;
+        })() && (
           <div className="mt-8">
+            {(() => {
+              console.log('Rendering waitlist section');
+              return null;
+            })()}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Waitlist Signups</h2>
