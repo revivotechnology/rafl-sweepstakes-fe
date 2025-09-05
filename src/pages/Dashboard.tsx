@@ -293,6 +293,8 @@ Enter now at ${store?.store_url || 'your-store.com'}
   const totalEmails = new Set(participants.map(p => p.email)).size;
   const activeGiveaways = giveaways.filter(g => g.status === 'active').length;
 
+  console.log('Render check - isAdmin:', isAdmin, 'waitlist length:', waitlist.length, 'user:', user?.email);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -495,15 +497,8 @@ Enter now at ${store?.store_url || 'your-store.com'}
         </div>
 
         {/* Admin Waitlist Section */}
-        {(() => {
-          console.log('Checking waitlist render condition - isAdmin:', isAdmin, 'waitlist:', waitlist);
-          return isAdmin;
-        })() && (
+        {isAdmin && (
           <div className="mt-8">
-            {(() => {
-              console.log('Rendering waitlist section');
-              return null;
-            })()}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Waitlist Signups</h2>
