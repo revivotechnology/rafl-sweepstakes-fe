@@ -475,7 +475,6 @@ Enter now at ${store?.store_url || 'your-store.com'}
               </div>
             </Card>
           </div>
-          </div>
         </div>
 
         {/* Admin Waitlist Section */}
