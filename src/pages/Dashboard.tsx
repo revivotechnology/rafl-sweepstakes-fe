@@ -110,11 +110,16 @@ export default function Dashboard() {
         .eq('role', 'admin')
         .maybeSingle();
 
+      console.log('Admin role check for user:', user.email, user.id);
+      console.log('Admin role data:', adminRole);
+      console.log('Admin role error:', adminRoleError);
+
       if (adminRoleError) {
         console.error('Role check error:', adminRoleError);
       }
 
       const isAdminUser = adminRole !== null;
+      console.log('Is admin user:', isAdminUser);
       setIsAdmin(isAdminUser);
 
       if (isAdminUser) {
@@ -158,6 +163,9 @@ export default function Dashboard() {
           .from('waitlist')
           .select('*')
           .order('created_at', { ascending: false });
+
+        console.log('Waitlist data:', waitlistData);
+        console.log('Waitlist error:', waitlistError);
 
         if (waitlistError) {
           console.error('Waitlist error:', waitlistError);
