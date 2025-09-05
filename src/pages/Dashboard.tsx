@@ -520,6 +520,9 @@ Enter now at ${store?.store_url || 'your-store.com'}
           </div>
         )}
 
+        </div>
+
+        </div>
       </div>
     </div>
   );
