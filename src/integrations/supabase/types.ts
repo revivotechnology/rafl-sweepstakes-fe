@@ -14,6 +14,129 @@ export type Database = {
   }
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at: string | null
+          name: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash: string
+          key_prefix: string
+          last_used_at?: string | null
+          name?: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          key_hash?: string
+          key_prefix?: string
+          last_used_at?: string | null
+          name?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_keys_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      consent_logs: {
+        Row: {
+          consent_brand: boolean
+          consent_rafl: boolean
+          consent_text: string | null
+          created_at: string
+          entry_id: string
+          id: string
+          ip_address: unknown | null
+          user_agent: string | null
+        }
+        Insert: {
+          consent_brand?: boolean
+          consent_rafl?: boolean
+          consent_text?: string | null
+          created_at?: string
+          entry_id: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Update: {
+          consent_brand?: boolean
+          consent_rafl?: boolean
+          consent_text?: string | null
+          created_at?: string
+          entry_id?: string
+          id?: string
+          ip_address?: unknown | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "consent_logs_entry_id_fkey"
+            columns: ["entry_id"]
+            isOneToOne: false
+            referencedRelation: "entries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entries: {
+        Row: {
+          created_at: string
+          hashed_email: string
+          id: string
+          ip_address: unknown | null
+          metadata: Json | null
+          promo_id: string
+          source: Database["public"]["Enums"]["entry_source"]
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          hashed_email: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          promo_id: string
+          source: Database["public"]["Enums"]["entry_source"]
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          hashed_email?: string
+          id?: string
+          ip_address?: unknown | null
+          metadata?: Json | null
+          promo_id?: string
+          source?: Database["public"]["Enums"]["entry_source"]
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entries_promo_id_fkey"
+            columns: ["promo_id"]
+            isOneToOne: false
+            referencedRelation: "promos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       giveaways: {
         Row: {
           created_at: string
@@ -102,6 +225,74 @@ export type Database = {
             columns: ["purchase_id"]
             isOneToOne: false
             referencedRelation: "purchases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      promos: {
+        Row: {
+          amoe_instructions: string | null
+          created_at: string
+          eligibility_text: string | null
+          enable_purchase_entries: boolean | null
+          end_date: string | null
+          entries_per_dollar: number | null
+          id: string
+          max_entries_per_email: number | null
+          max_entries_per_ip: number | null
+          prize_amount: number
+          prize_description: string
+          rules_text: string | null
+          start_date: string | null
+          status: Database["public"]["Enums"]["promo_status"]
+          store_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          amoe_instructions?: string | null
+          created_at?: string
+          eligibility_text?: string | null
+          enable_purchase_entries?: boolean | null
+          end_date?: string | null
+          entries_per_dollar?: number | null
+          id?: string
+          max_entries_per_email?: number | null
+          max_entries_per_ip?: number | null
+          prize_amount?: number
+          prize_description: string
+          rules_text?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["promo_status"]
+          store_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          amoe_instructions?: string | null
+          created_at?: string
+          eligibility_text?: string | null
+          enable_purchase_entries?: boolean | null
+          end_date?: string | null
+          entries_per_dollar?: number | null
+          id?: string
+          max_entries_per_email?: number | null
+          max_entries_per_ip?: number | null
+          prize_amount?: number
+          prize_description?: string
+          rules_text?: string | null
+          start_date?: string | null
+          status?: Database["public"]["Enums"]["promo_status"]
+          store_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promos_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
             referencedColumns: ["id"]
           },
         ]
@@ -320,7 +511,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "store_manager" | "store_owner"
+      entry_source:
+        | "klaviyo"
+        | "mailchimp"
+        | "aweber"
+        | "sendgrid"
+        | "amoe"
+        | "purchase"
+        | "direct"
       giveaway_status: "draft" | "active" | "completed"
+      promo_status: "draft" | "active" | "paused" | "ended"
       store_status: "active" | "suspended"
       subscription_tier: "free" | "premium"
     }
@@ -451,7 +651,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "store_manager", "store_owner"],
+      entry_source: [
+        "klaviyo",
+        "mailchimp",
+        "aweber",
+        "sendgrid",
+        "amoe",
+        "purchase",
+        "direct",
+      ],
       giveaway_status: ["draft", "active", "completed"],
+      promo_status: ["draft", "active", "paused", "ended"],
       store_status: ["active", "suspended"],
       subscription_tier: ["free", "premium"],
     },
