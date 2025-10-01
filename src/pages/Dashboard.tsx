@@ -21,6 +21,9 @@ import {
   Eye
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ShopifyConnect } from '@/components/shopify-connect';
+import { ApiKeyManager } from '@/components/api-key-manager';
+import { PromoManager } from '@/components/promo-manager';
 
 interface Store {
   id: string;
@@ -377,6 +380,16 @@ Enter now at ${store?.store_url || 'your-store.com'}
             <div className="text-2xl font-bold">{activeGiveaways}</div>
             <p className="text-xs text-muted-foreground">Currently running</p>
           </Card>
+        </div>
+
+        {/* Management Tools */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <PromoManager storeId={store?.id || null} />
+          <ApiKeyManager storeId={store?.id || null} />
+        </div>
+
+        <div className="mb-8">
+          <ShopifyConnect storeId={store?.id || null} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
