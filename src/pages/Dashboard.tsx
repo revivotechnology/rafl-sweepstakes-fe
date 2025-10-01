@@ -24,6 +24,8 @@ import { toast } from '@/hooks/use-toast';
 import { ShopifyConnect } from '@/components/shopify-connect';
 import { ApiKeyManager } from '@/components/api-key-manager';
 import { PromoManager } from '@/components/promo-manager';
+import { AnalyticsDashboard } from '@/components/analytics-dashboard';
+import { DataExport } from '@/components/data-export';
 
 interface Store {
   id: string;
@@ -383,9 +385,10 @@ Enter now at ${store?.store_url || 'your-store.com'}
         </div>
 
         {/* Management Tools */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <PromoManager storeId={store?.id || null} />
           <ApiKeyManager storeId={store?.id || null} />
+          <DataExport storeId={store?.id || null} />
         </div>
 
         <div className="mb-8">
@@ -507,6 +510,11 @@ Enter now at ${store?.store_url || 'your-store.com'}
               </div>
             </Card>
           </div>
+        </div>
+
+        {/* Analytics Dashboard */}
+        <div className="mb-8">
+          <AnalyticsDashboard storeId={store?.id || null} />
         </div>
 
         {/* Admin Waitlist Section */}
