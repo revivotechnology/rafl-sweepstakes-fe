@@ -1,1 +1,10 @@
 project_id = "rjugqrifeecoxewscqdk"
+
+[functions.process-entry]
+verify_jwt = false
+
+[functions.shopify-auth]
+verify_jwt = false
+
+[functions.shopify-webhooks]
+verify_jwt = false
