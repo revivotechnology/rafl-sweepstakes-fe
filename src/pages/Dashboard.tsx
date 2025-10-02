@@ -476,10 +476,6 @@ Enter now at ${store?.store_url || 'your-store.com'}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Giveaway Management</h2>
-                <Button variant="primary" size="sm">
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Giveaway
-                </Button>
               </div>
               <div className="space-y-3">
                 {giveaways.slice(0, 3).map((giveaway) => (
