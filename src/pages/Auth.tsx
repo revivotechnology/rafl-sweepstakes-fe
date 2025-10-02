@@ -19,6 +19,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [storeName, setStoreName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener first
@@ -139,6 +140,48 @@ export default function Auth() {
     }
   };
 
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) {
+        toast({
+          title: "Reset Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Check Your Email",
+          description: "We've sent you a password reset link.",
+        });
+        setShowPasswordReset(false);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
@@ -233,38 +276,85 @@ export default function Auth() {
               </TabsContent>
 
               <TabsContent value="signin" className="space-y-4">
-                <form onSubmit={handleSignIn} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-email">Email</Label>
-                    <Input
-                      id="signin-email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="signin-password">Password</Label>
-                    <Input
-                      id="signin-password"
-                      type="password"
-                      placeholder="Your password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    variant="primary"
-                    disabled={loading}
-                  >
-                    {loading ? "Signing In..." : "Sign In"}
-                  </Button>
-                </form>
+                {!showPasswordReset ? (
+                  <form onSubmit={handleSignIn} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="signin-email">Email</Label>
+                      <Input
+                        id="signin-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="signin-password">Password</Label>
+                        <button
+                          type="button"
+                          onClick={() => setShowPasswordReset(true)}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
+                      <Input
+                        id="signin-password"
+                        type="password"
+                        placeholder="Your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                    <Button 
+                      type="submit" 
+                      className="w-full" 
+                      variant="primary"
+                      disabled={loading}
+                    >
+                      {loading ? "Signing In..." : "Sign In"}
+                    </Button>
+                  </form>
+                ) : (
+                  <form onSubmit={handlePasswordReset} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="reset-email">Email</Label>
+                      <Input
+                        id="reset-email"
+                        type="email"
+                        placeholder="your@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                      />
+                      <p className="text-sm text-muted-foreground">
+                        Enter your email and we'll send you a reset link
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowPasswordReset(false)}
+                        disabled={loading}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        variant="primary"
+                        disabled={loading}
+                        className="flex-1"
+                      >
+                        {loading ? "Sending..." : "Send Reset Link"}
+                      </Button>
+                    </div>
+                  </form>
+                )}
               </TabsContent>
             </Tabs>
           </Card>
