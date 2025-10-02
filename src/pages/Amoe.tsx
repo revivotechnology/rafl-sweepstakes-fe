@@ -15,6 +15,8 @@ interface Promo {
   title: string;
   prize_description: string;
   prize_amount: number;
+  start_date: string | null;
+  end_date: string | null;
   amoe_instructions: string | null;
   stores: {
     store_name: string;
@@ -231,7 +233,12 @@ export default function Amoe() {
               </h3>
               
               {promo.amoe_instructions ? (
-                <div className="whitespace-pre-wrap text-sm">{promo.amoe_instructions}</div>
+                <div className="whitespace-pre-wrap text-sm">
+                  {promo.amoe_instructions
+                    .replace(/{PRIZE_AMOUNT}/g, `$${promo.prize_amount.toLocaleString()}`)
+                    .replace(/{START_DATE}/g, promo.start_date ? new Date(promo.start_date).toLocaleDateString() : '[Start Date]')
+                    .replace(/{END_DATE}/g, promo.end_date ? new Date(promo.end_date).toLocaleDateString() : '[End Date]')}
+                </div>
               ) : (
                 <div className="text-sm">
                   <p className="mb-2">

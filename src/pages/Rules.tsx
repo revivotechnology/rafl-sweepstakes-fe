@@ -192,7 +192,12 @@ export default function Rules() {
             {promo.rules_text && (
               <section className="mb-6">
                 <h3 className="text-xl font-semibold mb-2">Additional Terms</h3>
-                <div className="whitespace-pre-wrap">{promo.rules_text}</div>
+                <div className="whitespace-pre-wrap">
+                  {promo.rules_text
+                    .replace(/{PRIZE_AMOUNT}/g, `$${promo.prize_amount.toLocaleString()}`)
+                    .replace(/{START_DATE}/g, promo.start_date ? new Date(promo.start_date).toLocaleDateString() : '[Start Date]')
+                    .replace(/{END_DATE}/g, promo.end_date ? new Date(promo.end_date).toLocaleDateString() : '[End Date]')}
+                </div>
               </section>
             )}
 

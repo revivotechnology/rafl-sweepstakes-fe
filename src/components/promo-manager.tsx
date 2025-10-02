@@ -335,14 +335,37 @@ export function PromoManager({ storeId }: PromoManagerProps) {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="amoe">AMOE Instructions</Label>
+              <div className="border-t pt-4">
+                <div className="mb-2">
+                  <Label htmlFor="rules" className="text-base font-semibold">Sweepstakes Rules</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use {"{PRIZE_AMOUNT}"}, {"{START_DATE}"}, and {"{END_DATE}"} as placeholders
+                  </p>
+                </div>
+                <Textarea
+                  id="rules"
+                  placeholder="Enter your complete sweepstakes rules here..."
+                  value={formData.rules_text}
+                  onChange={(e) => setFormData({ ...formData, rules_text: e.target.value })}
+                  rows={8}
+                  className="font-mono text-sm"
+                />
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="mb-2">
+                  <Label htmlFor="amoe" className="text-base font-semibold">No Purchase Necessary (AMOE)</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Use {"{PRIZE_AMOUNT}"}, {"{START_DATE}"}, and {"{END_DATE}"} as placeholders
+                  </p>
+                </div>
                 <Textarea
                   id="amoe"
-                  placeholder="Mail a postcard with your name and email to..."
+                  placeholder="Enter your AMOE/free entry method instructions here..."
                   value={formData.amoe_instructions}
                   onChange={(e) => setFormData({ ...formData, amoe_instructions: e.target.value })}
-                  rows={3}
+                  rows={6}
+                  className="font-mono text-sm"
                 />
               </div>
 
