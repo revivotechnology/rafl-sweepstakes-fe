@@ -385,7 +385,7 @@ Enter now at ${store?.store_url || 'your-store.com'}
         </div>
 
         {/* Management Tools */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8" id="promo-manager">
           <PromoManager storeId={store?.id || null} />
           <ApiKeyManager storeId={store?.id || null} />
           <DataExport storeId={store?.id || null} />
@@ -476,6 +476,14 @@ Enter now at ${store?.store_url || 'your-store.com'}
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-semibold">Giveaway Management</h2>
+                <Button 
+                  variant="primary" 
+                  size="sm"
+                  onClick={() => window.location.href = '#promo-manager'}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Giveaway
+                </Button>
               </div>
               <div className="space-y-3">
                 {giveaways.slice(0, 3).map((giveaway) => (
