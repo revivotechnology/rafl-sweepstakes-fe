@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,50 +8,30 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import { Zap, Store, ArrowLeft } from 'lucide-react';
+import { Zap, Store, ArrowLeft, ShoppingBag } from 'lucide-react';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
   const [storeName, setStoreName] = useState('');
+  const [storeUrl, setStoreUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPasswordReset, setShowPasswordReset] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        // Redirect authenticated users to dashboard
-        if (session?.user) {
-          setTimeout(() => {
-            navigate('/dashboard');
-          }, 100);
-        }
-      }
-    );
-
-    // Then check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        navigate('/dashboard');
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    // Check if user is already authenticated
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      // Redirect to dashboard if already logged in
+      navigate('/dashboard');
+    }
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !storeName) {
+    if (!email || !password || !name || !storeName) {
       toast({
         title: "Missing Information",
         description: "Please fill in all fields",
@@ -64,27 +43,36 @@ export default function Auth() {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const response = await apiClient.post('/api/auth/signup', {
         email,
         password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            store_name: storeName,
-          }
-        }
+        name,
+        storeName,
+        storeUrl: storeUrl || ''
       });
 
-      if (error) {
-        toast({
-          title: "Sign Up Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (data.user) {
+      if (response.success && response.data) {
+        // Store token in localStorage
+        localStorage.setItem('auth_token', response.data.token);
+        
+        // Store user info
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('store', JSON.stringify(response.data.store));
+
         toast({
           title: "Welcome to Rafl!",
           description: "Your account has been created successfully.",
+        });
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
+      } else {
+        toast({
+          title: "Sign Up Error",
+          description: response.error || "Failed to create account",
+          variant: "destructive",
         });
       }
     } catch (error: any) {
@@ -112,21 +100,33 @@ export default function Auth() {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const response = await apiClient.post('/api/auth/signin', {
         email,
         password,
       });
 
-      if (error) {
-        toast({
-          title: "Sign In Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else if (data.user) {
+      if (response.success && response.data) {
+        // Store token in localStorage
+        localStorage.setItem('auth_token', response.data.token);
+        
+        // Store user info
+        localStorage.setItem('user', JSON.stringify(response.data.user));
+        localStorage.setItem('store', JSON.stringify(response.data.store));
+
         toast({
           title: "Welcome back!",
           description: "You've been signed in successfully.",
+        });
+
+        // Redirect to dashboard
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 500);
+      } else {
+        toast({
+          title: "Sign In Error",
+          description: response.error || "Invalid email or password",
+          variant: "destructive",
         });
       }
     } catch (error: any) {
@@ -154,23 +154,12 @@ export default function Auth() {
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth`,
+      // TODO: Implement password reset endpoint
+      toast({
+        title: "Feature Coming Soon",
+        description: "Password reset will be available soon. Please contact support.",
       });
-
-      if (error) {
-        toast({
-          title: "Reset Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Check Your Email",
-          description: "We've sent you a password reset link.",
-        });
-        setShowPasswordReset(false);
-      }
+      setShowPasswordReset(false);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -180,6 +169,27 @@ export default function Auth() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleShopifyConnect = () => {
+    // Get shop domain from user input
+    const shopDomain = prompt('Enter your Shopify store domain (e.g., your-store or your-store.myshopify.com):');
+    
+    if (!shopDomain) {
+      toast({
+        title: "Shop Domain Required",
+        description: "Please enter your Shopify store domain",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Redirect to Shopify OAuth
+    const oauthUrl = `http://localhost:4000/api/auth/shopify?shop=${encodeURIComponent(shopDomain)}`;
+    console.log('Redirecting to:', oauthUrl);
+    
+    // Force redirect
+    window.location.href = oauthUrl;
   };
 
   return (
@@ -232,6 +242,17 @@ export default function Auth() {
               <TabsContent value="signup" className="space-y-4">
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
+                    <Label htmlFor="name">Your Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      placeholder="John Doe"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="store-name">Store Name</Label>
                     <Input
                       id="store-name"
@@ -240,6 +261,16 @@ export default function Auth() {
                       value={storeName}
                       onChange={(e) => setStoreName(e.target.value)}
                       required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="store-url">Store URL (Optional)</Label>
+                    <Input
+                      id="store-url"
+                      type="url"
+                      placeholder="https://yourstore.com"
+                      value={storeUrl}
+                      onChange={(e) => setStoreUrl(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -273,6 +304,28 @@ export default function Auth() {
                     {loading ? "Creating Account..." : "Create Account"}
                   </Button>
                 </form>
+
+                {/* Shopify Connect Section */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or connect with Shopify
+                    </span>
+                  </div>
+                </div>
+
+                <Button 
+                  type="button" 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={handleShopifyConnect}
+                >
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  Connect with Shopify
+                </Button>
               </TabsContent>
 
               <TabsContent value="signin" className="space-y-4">

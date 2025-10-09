@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -29,212 +28,127 @@ import { DataExport } from '@/components/data-export';
 
 interface Store {
   id: string;
-  store_name: string;
-  store_url: string;
-  subscription_tier: string;
+  storeName: string;
+  storeUrl: string;
+  subscriptionTier: string;
   status: string;
 }
 
-interface Giveaway {
+interface Promo {
   id: string;
   title: string;
-  prize_amount: number;
+  prizeAmount: number;
   status: string;
-  total_entries: number;
-  start_date: string;
-  end_date: string;
+  totalEntries: number;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
 }
 
-interface Participant {
+interface Entry {
   id: string;
   email: string;
-  entry_count: number;
-  created_at: string;
+  entryCount: number;
+  source: string;
+  createdAt: string;
+}
+
+interface DashboardStats {
+  totalEntries: number;
+  uniqueEmails: number;
+  activePromos: number;
+  prizePool: number;
 }
 
 export default function Dashboard() {
-  console.log('Dashboard component rendering');
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [store, setStore] = useState<Store | null>(null);
-  const [stores, setStores] = useState<Store[]>([]);
-  const [giveaways, setGiveaways] = useState<Giveaway[]>([]);
-  const [participants, setParticipants] = useState<Participant[]>([]);
-  const [waitlist, setWaitlist] = useState<Array<{ id: string; email: string; source: string | null; utm_source: string | null; utm_campaign: string | null; utm_medium: string | null; created_at: string; }>>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [promos, setPromos] = useState<Promo[]>([]);
+  const [entries, setEntries] = useState<Entry[]>([]);
+  const [stats, setStats] = useState<DashboardStats>({
+    totalEntries: 0,
+    uniqueEmails: 0,
+    activePromos: 0,
+    prizePool: 1000
+  });
   const [loading, setLoading] = useState(true);
-
-  console.log('Dashboard state - isAdmin:', isAdmin, 'waitlist length:', waitlist.length);
+  
+  // TODO: Restore when implementing admin features
+  // const [waitlist, setWaitlist] = useState<Array<{ id: string; email: string; source: string | null; utm_source: string | null; utm_campaign: string | null; utm_medium: string | null; created_at: string; }>>([]);
+  // const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log('Auth state change:', event, 'Session:', !!session, 'User:', session?.user?.email);
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (!session?.user) {
-          console.log('No session, redirecting to auth');
-          navigate('/auth');
-        } else {
-          console.log('Session found, loading dashboard data for:', session.user.email);
-          // Defer data fetching to prevent deadlocks
-          setTimeout(() => {
-            loadDashboardData();
-          }, 0);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', !!session, 'User:', session?.user?.email);
-      setSession(session);
-      setUser(session?.user ?? null);
+    // Check for token in URL parameters (from OAuth callback)
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+    const shopifyConnected = urlParams.get('shopify_connected');
+    
+    if (urlToken) {
+      // Store token from OAuth callback
+      localStorage.setItem('auth_token', urlToken);
       
-      if (!session?.user) {
-        console.log('No initial session, redirecting to auth');
-        navigate('/auth');
-      } else {
-        console.log('Initial session found, loading dashboard data');
-        loadDashboardData();
+      // Show success message
+      if (shopifyConnected === 'true') {
+        toast({
+          title: "Shopify Connected!",
+          description: "Your store has been successfully connected.",
+        });
       }
-    });
+      
+      // Clean up URL parameters
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    
+    // Check if user is authenticated
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      navigate('/auth');
+      return;
+    }
 
-    return () => subscription.unsubscribe();
+    // Load dashboard data
+    loadDashboardData();
   }, [navigate]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
       
-      // Check if user exists before making queries
-      if (!user?.id) {
-        setLoading(false);
-        return;
-      }
-      
-      // Determine if user is admin
-      const { data: adminRole, error: adminRoleError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .eq('role', 'admin')
-        .maybeSingle();
+      const response = await apiClient.get('/api/dashboard');
 
-      console.log('Admin role check for user:', user.email, user.id);
-      console.log('Admin role data:', adminRole);
-      console.log('Admin role error:', adminRoleError);
+      if (response.success && response.data) {
+        const { store: storeData, promos: promosData, entries: entriesData, stats: statsData } = response.data;
+        
+        setStore(storeData);
+        setPromos(promosData || []);
+        setEntries(entriesData || []);
+        setStats(statsData || {
+          totalEntries: 0,
+          uniqueEmails: 0,
+          activePromos: 0,
+          prizePool: 1000
+        });
 
-      if (adminRoleError) {
-        console.error('Role check error:', adminRoleError);
-      }
-
-      const isAdminUser = adminRole !== null;
-      console.log('Is admin user:', isAdminUser);
-      setIsAdmin(isAdminUser);
-
-      if (isAdminUser) {
-        // Admin: load all stores
-        const { data: storesData, error: storesError } = await supabase
-          .from('stores')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        if (storesError) {
-          console.error('Stores error:', storesError);
-          toast({
-            title: 'Error loading stores',
-            description: storesError.message,
-            variant: 'destructive',
-          });
-        } else {
-          setStores(storesData || []);
-
-          if (storesData && storesData.length > 0) {
-            const storeIds = storesData.map(s => s.id);
-            const { data: giveawaysData, error: giveawaysError } = await supabase
-              .from('giveaways')
-              .select('*')
-              .in('store_id', storeIds)
-              .order('created_at', { ascending: false });
-
-            if (giveawaysError) {
-              console.error('Giveaways error:', giveawaysError);
-            } else {
-              setGiveaways(giveawaysData || []);
-
-              // For admins, do not fetch participants to protect customer emails
-              setParticipants([]);
-            }
-          }
-        }
-
-        // Fetch waitlist signups for admin view
-        const { data: waitlistData, error: waitlistError } = await supabase
-          .from('waitlist')
-          .select('*')
-          .order('created_at', { ascending: false });
-
-        console.log('Waitlist data:', waitlistData);
-        console.log('Waitlist error:', waitlistError);
-
-        if (waitlistError) {
-          console.error('Waitlist error:', waitlistError);
-        } else {
-          setWaitlist(waitlistData || []);
-        }
+        // TODO: Restore when implementing admin features
+        // Check if user is admin
+        // const userData = JSON.parse(localStorage.getItem('user') || '{}');
+        // if (userData.role === 'admin') {
+        //   setIsAdmin(true);
+        //   // Fetch waitlist data for admin
+        //   const waitlistResponse = await apiClient.get('/api/waitlist');
+        //   if (waitlistResponse.success && waitlistResponse.data) {
+        //     setWaitlist(waitlistResponse.data);
+        //   }
+        // }
       } else {
-        // Non-admin: load single store and related data
-        const { data: storeData, error: storeError } = await supabase
-          .from('stores')
-          .select('*')
-          .maybeSingle();
-
-        if (storeError && storeError.code !== 'PGRST116') {
-          console.error('Store error:', storeError);
-          toast({
-            title: 'Error loading store data',
-            description: storeError.message,
-            variant: 'destructive',
-          });
-        } else if (storeData) {
-          setStore(storeData);
-          
-          // Load giveaways for this store
-          const { data: giveawaysData, error: giveawaysError } = await supabase
-            .from('giveaways')
-            .select('*')
-            .eq('store_id', storeData.id)
-            .order('created_at', { ascending: false });
-
-          if (giveawaysError) {
-            console.error('Giveaways error:', giveawaysError);
-          } else {
-            setGiveaways(giveawaysData || []);
-            
-            // Load participants for all giveaways
-            if (giveawaysData && giveawaysData.length > 0) {
-              const giveawayIds = giveawaysData.map(g => g.id);
-              const { data: participantsData, error: participantsError } = await supabase
-                .from('participants')
-                .select('*')
-                .in('giveaway_id', giveawayIds)
-                .order('created_at', { ascending: false });
-
-              if (participantsError) {
-                console.error('Participants error:', participantsError);
-              } else {
-                setParticipants(participantsData || []);
-              }
-            }
-          }
-        }
+        toast({
+          title: "Error loading dashboard",
+          description: response.error || "Please try refreshing the page",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error('Dashboard error:', error);
       toast({
         title: "Error loading dashboard",
         description: "Please try refreshing the page",
@@ -247,10 +161,22 @@ export default function Dashboard() {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      // Call logout endpoint
+      await apiClient.post('/api/auth/logout', {});
+      
+      // Clear local storage
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('store');
+      
+      // Redirect to home
       navigate('/');
     } catch (error) {
-      console.error('Sign out error:', error);
+      // Clear local storage anyway
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('store');
+      navigate('/');
     }
   };
 
@@ -294,12 +220,6 @@ Enter now at ${store?.store_url || 'your-store.com'}
     );
   }
 
-  const totalEntries = participants.length;
-  const totalEmails = new Set(participants.map(p => p.email)).size;
-  const activeGiveaways = giveaways.filter(g => g.status === 'active').length;
-
-  console.log('Render check - isAdmin:', isAdmin, 'waitlist length:', waitlist.length, 'user:', user?.email);
-
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -313,17 +233,18 @@ Enter now at ${store?.store_url || 'your-store.com'}
               <div>
                 <h1 className="text-xl font-bold">Rafl Dashboard</h1>
                 <p className="text-sm text-muted-foreground">
-                  {isAdmin ? 'Global Admin View' : (store?.store_name || 'Your Store')}
+                  {store?.storeName || 'Your Store'}
                 </p>
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              {isAdmin && (
+              {/* TODO: Restore when implementing admin features */}
+              {/* {isAdmin && (
                 <Badge variant="default">Admin</Badge>
-              )}
+              )} */}
               {store && (
-                <Badge variant={store.subscription_tier === 'premium' ? 'default' : 'outline'}>
-                  {store.subscription_tier === 'premium' ? 'Premium' : 'Free Tier'}
+                <Badge variant={store.subscriptionTier === 'premium' ? 'default' : 'outline'}>
+                  {store.subscriptionTier === 'premium' ? 'Premium' : 'Free Tier'}
                 </Badge>
               )}
               <Button variant="ghost" size="sm">
@@ -347,12 +268,12 @@ Enter now at ${store?.store_url || 'your-store.com'}
             </div>
             <div className="text-2xl font-bold">
               <PrizeCounter 
-                amount={store?.subscription_tier === 'premium' ? 8500 : 1000} 
+                amount={stats.prizePool} 
                 animateOnMount={false} 
               />
             </div>
             <p className="text-xs opacity-90">
-              {store?.subscription_tier === 'premium' ? 'Network Pool' : 'Individual Prize'}
+              {store?.subscriptionTier === 'premium' ? 'Network Pool' : 'Individual Prize'}
             </p>
           </Card>
 
@@ -361,8 +282,8 @@ Enter now at ${store?.store_url || 'your-store.com'}
               <h3 className="text-sm font-medium text-muted-foreground">Total Entries</h3>
               <Users className="w-4 h-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold">{totalEntries}</div>
-            <p className="text-xs text-muted-foreground">All giveaways</p>
+            <div className="text-2xl font-bold">{stats.totalEntries}</div>
+            <p className="text-xs text-muted-foreground">All promos</p>
           </Card>
 
           <Card className="p-6">
@@ -370,16 +291,16 @@ Enter now at ${store?.store_url || 'your-store.com'}
               <h3 className="text-sm font-medium text-muted-foreground">Email Subscribers</h3>
               <Mail className="w-4 h-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold">{totalEmails}</div>
+            <div className="text-2xl font-bold">{stats.uniqueEmails}</div>
             <p className="text-xs text-muted-foreground">Unique emails collected</p>
           </Card>
 
           <Card className="p-6">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-sm font-medium text-muted-foreground">Active Giveaways</h3>
+              <h3 className="text-sm font-medium text-muted-foreground">Active Promos</h3>
               <Store className="w-4 h-4 text-muted-foreground" />
             </div>
-            <div className="text-2xl font-bold">{activeGiveaways}</div>
+            <div className="text-2xl font-bold">{stats.activePromos}</div>
             <p className="text-xs text-muted-foreground">Currently running</p>
           </Card>
         </div>
@@ -450,24 +371,24 @@ Enter now at ${store?.store_url || 'your-store.com'}
                 </Button>
               </div>
               <div className="space-y-3 max-h-64 overflow-y-auto">
-                {participants.slice(0, 10).map((participant) => (
-                  <div key={participant.id} className="flex items-center justify-between py-2 border-b border-border/50">
+                {entries.slice(0, 10).map((entry) => (
+                  <div key={entry.id} className="flex items-center justify-between py-2 border-b border-border/50">
                     <div>
-                      <p className="font-medium text-sm">{participant.email}</p>
+                      <p className="font-medium text-sm">{entry.email}</p>
                       <p className="text-xs text-muted-foreground">
-                        {participant.entry_count} {participant.entry_count === 1 ? 'entry' : 'entries'}
+                        {entry.entryCount} {entry.entryCount === 1 ? 'entry' : 'entries'} • {entry.source}
                       </p>
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {new Date(participant.created_at).toLocaleDateString()}
+                      {new Date(entry.createdAt).toLocaleDateString()}
                     </div>
                   </div>
                 ))}
-                {participants.length === 0 && (
+                {entries.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Mail className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>No email subscribers yet</p>
-                    <p className="text-xs">Share your giveaway to start collecting emails</p>
+                    <p>No entries yet</p>
+                    <p className="text-xs">Share your promo to start collecting entries</p>
                   </div>
                 )}
               </div>
@@ -486,17 +407,17 @@ Enter now at ${store?.store_url || 'your-store.com'}
                 </Button>
               </div>
               <div className="space-y-3">
-                {giveaways.slice(0, 3).map((giveaway) => (
-                  <div key={giveaway.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
+                {promos.slice(0, 3).map((promo) => (
+                  <div key={promo.id} className="flex items-center justify-between p-3 bg-muted/30 rounded-lg">
                     <div>
-                      <h3 className="font-medium">{giveaway.title}</h3>
+                      <h3 className="font-medium">{promo.title}</h3>
                       <p className="text-sm text-muted-foreground">
-                        ${giveaway.prize_amount.toLocaleString()} • {giveaway.total_entries} entries
+                        ${promo.prizeAmount.toLocaleString()} • {promo.totalEntries} entries
                       </p>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Badge variant={giveaway.status === 'active' ? 'default' : 'outline'}>
-                        {giveaway.status}
+                      <Badge variant={promo.status === 'active' ? 'default' : 'outline'}>
+                        {promo.status}
                       </Badge>
                       <Button variant="ghost" size="sm">
                         <Eye className="w-4 h-4" />
@@ -504,11 +425,11 @@ Enter now at ${store?.store_url || 'your-store.com'}
                     </div>
                   </div>
                 ))}
-                {giveaways.length === 0 && (
+                {promos.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p>No giveaways created yet</p>
-                    <p className="text-xs">Create your first giveaway to get started</p>
+                    <p>No promos created yet</p>
+                    <p className="text-xs">Create your first promo to get started</p>
                   </div>
                 )}
               </div>
@@ -516,13 +437,14 @@ Enter now at ${store?.store_url || 'your-store.com'}
           </div>
         </div>
 
-        {/* Analytics Dashboard */}
-        <div className="mb-8">
+        {/* TODO: Restore when implementing analytics with MongoDB backend */}
+        {/* <div className="mb-8">
           <AnalyticsDashboard storeId={store?.id || null} />
-        </div>
+        </div> */}
 
+        {/* TODO: Restore when implementing admin features and waitlist */}
         {/* Admin Waitlist Section */}
-        {isAdmin && (
+        {/* {isAdmin && (
           <div className="mt-8">
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
@@ -561,7 +483,7 @@ Enter now at ${store?.store_url || 'your-store.com'}
               )}
             </Card>
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );
