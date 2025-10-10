@@ -104,6 +104,34 @@ Deno.serve(async (req) => {
         }
 
         console.log('Purchase recorded:', payload.id);
+        
+        // Forward to MongoDB backend
+        try {
+          const backendUrl = Deno.env.get('MONGODB_BACKEND_URL') || 'http://localhost:4000';
+          const webhookEndpoint = topic === 'orders/create' 
+            ? '/api/webhooks/orders/create'
+            : '/api/webhooks/orders/updated';
+          
+          const backendResponse = await fetch(`${backendUrl}${webhookEndpoint}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-shopify-shop-domain': shopDomain,
+              'x-shopify-hmac-sha256': hmacHeader,
+              'x-shopify-topic': topic
+            },
+            body: JSON.stringify(payload)
+          });
+          
+          if (backendResponse.ok) {
+            console.log('✅ Forwarded to MongoDB backend successfully');
+          } else {
+            console.error('❌ Failed to forward to MongoDB backend:', backendResponse.status);
+          }
+        } catch (error) {
+          console.error('Error forwarding to backend:', error);
+        }
+        
         break;
       }
 
