@@ -5,7 +5,7 @@ interface RaflLogoProps {
 export function RaflLogo({ className = "w-8 h-8" }: RaflLogoProps) {
   console.log("RaflLogo component rendering...");
   return (
-    <div className={`${className} relative`}>
+    <div className={`${className} relative cursor-pointer`}>
       <svg viewBox="0 0 100 100" className="w-full h-full">
         {/* Sunburst background */}
         <defs>
