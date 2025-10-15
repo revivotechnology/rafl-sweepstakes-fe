@@ -2,6 +2,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Dashboard from '@/pages/Dashboard';
+import AdminDashboard from '@/pages/AdminDashboard';
 import Rules from '@/pages/Rules';
 import Amoe from '@/pages/Amoe';
 import NotFound from '@/pages/NotFound';
@@ -19,6 +20,10 @@ const router = createBrowserRouter([
   {
     path: '/dashboard',
     element: <Dashboard />,
+  },
+  {
+    path: '/admin',
+    element: <AdminDashboard />,
   },
   {
     path: '/rules/:promoId',

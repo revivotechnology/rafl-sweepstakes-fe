@@ -107,6 +107,20 @@ export default function Dashboard() {
       return;
     }
 
+    // Check if user is admin and redirect to admin dashboard
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.role === 'admin') {
+          navigate('/admin');
+          return;
+        }
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+
     // Load dashboard data
     loadDashboardData();
   }, [navigate]);

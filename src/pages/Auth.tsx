@@ -106,8 +106,11 @@ export default function Auth() {
       });
 
       if (response.success && response.data) {
-        // Store token in localStorage
-        localStorage.setItem('auth_token', response.data.token);
+        // Store token in localStorage (get from session.access_token)
+        const token = response.data.session?.access_token;
+        if (token) {
+          localStorage.setItem('auth_token', token);
+        }
         
         // Store user info
         localStorage.setItem('user', JSON.stringify(response.data.user));
@@ -118,10 +121,17 @@ export default function Auth() {
           description: "You've been signed in successfully.",
         });
 
-        // Redirect to dashboard
-        setTimeout(() => {
-          navigate('/dashboard');
-        }, 500);
+        // Check if user is admin and redirect accordingly
+        const userRole = response.data.user?.role;
+        if (userRole === 'admin') {
+          setTimeout(() => {
+            navigate('/admin');
+          }, 500);
+        } else {
+          setTimeout(() => {
+            navigate('/dashboard');
+          }, 500);
+        }
       } else {
         toast({
           title: "Sign In Error",

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api-client";
 import { Mail, Check, Loader2 } from "lucide-react";
 
 interface WaitlistFormProps {
@@ -32,6 +33,51 @@ export function WaitlistForm({ variant = 'inline', className = '' }: WaitlistFor
     setIsLoading(true);
 
     try {
+      // First, get active promos to create manual entries
+      const activePromosResponse = await apiClient.get('/api/entries/active-promos');
+      
+      let entriesCreated = 0;
+      let totalPromos = 0;
+
+      // Handle the API response structure: apiClient returns { success, data }
+      // where data is the server response { success, data: { promos: [...] } }
+      console.log('Active promos response:', activePromosResponse);
+      
+      const promos = activePromosResponse.success && activePromosResponse.data?.data?.promos 
+        ? activePromosResponse.data.data.promos 
+        : [];
+      
+      console.log('Extracted promos:', promos);
+
+      if (promos.length > 0) {
+        totalPromos = promos.length;
+        
+        // Create manual entries for each active promo
+        for (const promo of promos) {
+          try {
+            const entryResponse = await apiClient.post('/api/entries/manual', {
+              email: email.toLowerCase().trim(),
+              promoId: promo.id,
+              source: 'direct',
+              consentBrand: false,
+              consentRafl: true
+            });
+            
+            if (entryResponse.success) {
+              entriesCreated++;
+            } else if (entryResponse.error?.includes('Maximum entries per email reached')) {
+              // User already has entries for this promo, that's okay
+              console.log(`User already has entries for promo ${promo.id}`);
+            } else {
+              console.error(`Error creating entry for promo ${promo.id}:`, entryResponse.error);
+            }
+          } catch (entryError) {
+            console.error(`Error creating entry for promo ${promo.id}:`, entryError);
+          }
+        }
+      }
+
+      // Also add to waitlist (this will handle duplicates gracefully)
       const { error } = await supabase
         .from('waitlist')
         .insert([
@@ -43,31 +89,48 @@ export function WaitlistForm({ variant = 'inline', className = '' }: WaitlistFor
           }
         ]);
 
-      if (error) {
-        if (error.code === '23505') { // Unique constraint violation
-          toast({
-            title: "Already signed up!",
-            description: "This email is already on our waitlist. We'll notify you when the beta launches!",
-          });
-        } else {
-          throw error;
-        }
+      if (error && error.code !== '23505') { // 23505 is unique constraint violation (already in waitlist)
+        throw error;
+      }
+
+      // Show success message
+      setIsSuccess(true);
+      
+      if (entriesCreated > 0) {
+        toast({
+          title: "Welcome to the giveaway!",
+          description: `You've been entered into ${entriesCreated} active giveaway${entriesCreated > 1 ? 's' : ''}! We'll also notify you about future launches.`,
+        });
+      } else if (totalPromos > 0) {
+        toast({
+          title: "Already entered!",
+          description: "You're already entered in our active giveaways. We'll notify you about future launches!",
+        });
       } else {
-        setIsSuccess(true);
         toast({
           title: "Welcome to the waitlist!",
-          description: "We'll notify you when our October 2025 beta giveaway launches.",
+          description: "We'll notify you when our next giveaway launches.",
         });
       }
       
       setEmail('');
     } catch (error) {
       console.error('Error joining waitlist:', error);
-      toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
-        variant: "destructive",
-      });
+      
+      // Check if it's a network error (backend not running)
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        toast({
+          title: "Connection Error",
+          description: "Unable to connect to the server. Please make sure the backend is running.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Something went wrong",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
