@@ -39,7 +39,7 @@ class ApiClient {
   /**
    * GET request
    */
-  async get<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+  async get<T = any>(endpoint: string, options?: { responseType?: 'json' | 'blob' }): Promise<ApiResponse<T>> {
     try {
       const response = await fetch(`${this.baseUrl}${endpoint}`, {
         method: 'GET',
@@ -51,8 +51,13 @@ class ApiClient {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      return { success: true, data };
+      if (options?.responseType === 'blob') {
+        const data = await response.blob();
+        return { success: true, data };
+      } else {
+        const data = await response.json();
+        return { success: true, data };
+      }
     } catch (error) {
       return {
         success: false,

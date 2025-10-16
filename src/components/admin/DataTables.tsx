@@ -50,14 +50,13 @@ export default function DataTables({ stores, promos, entries, winners, onDataRel
 
   const handleExportEntries = async (promoId: string) => {
     try {
-      const response = await fetch(`/api/admin/export/entries/${promoId}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        }
+      const response = await (apiClient.get as any)(`/api/admin/export/entries/${promoId}`, {
+        responseType: 'blob'
       });
 
-      if (response.ok) {
-        const blob = await response.blob();
+      if (response.success && response.data) {
+        // Create blob from the response data
+        const blob = new Blob([response.data], { type: 'text/csv' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
