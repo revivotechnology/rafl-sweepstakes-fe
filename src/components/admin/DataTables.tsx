@@ -26,16 +26,16 @@ export default function DataTables({ stores, promos, entries, winners, onDataRel
         promoId: promoId
       });
 
-      if (response.success) {
+      if (response.success && response.data.success) {
         toast({
           title: "Winner Selected!",
-          description: `Winner: ${response.data.winner.customer_email}`,
+          description: `Winner: ${response.data.data.winner.customerEmail}`,
         });
         onDataReload();
       } else {
         toast({
           title: "Error Selecting Winner",
-          description: response.error || "Please try again",
+          description: response.data?.message || response.error || "Please try again",
           variant: "destructive",
         });
       }
